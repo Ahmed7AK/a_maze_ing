@@ -39,7 +39,7 @@ for row in maze:
     line = ""
     for col in row:
         if col == 1:
-            line = line + f"{rgb_back(255, 255, 255)}{WALL}{RESET}"
+            line = line + f"{rgb(255, 255, 255)}{WALL}{RESET}"
         else:
             line = line + f"{RESET}{PATH}"
     print(padding + line, end="")
