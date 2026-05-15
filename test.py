@@ -27,6 +27,8 @@ def rgb_back(r, g, b):
 
 
 def draw(maze):
+    # vv made animation smoother
+    os.system('cls' if os.name == 'nt' else 'clear')
     print("\n")
     for row in maze:
         line = ""
@@ -39,6 +41,29 @@ def draw(maze):
         print("")
 
     print("\n")
+
+
+def gen_output(grid, filename="output.txt"):
+    # vv turns maze into hex only so far
+    rows = len(grid)
+    cols = len(grid[0])
+
+    with open(filename, "w") as f:
+        for r in range(1, rows, 2):
+            row_hex = ""
+            for c in range(1, cols, 2):
+                val = 0
+                if r - 1 < 0 or grid[r-1][c]:
+                    val += 1
+                if c + 1 >= cols or grid[r][c+1]:
+                    val += 2
+                if r + 1 >= rows or grid[r+1][c]:
+                    val += 4
+                if c - 1 < 0 or grid[r][c-1]:
+                    val += 8
+
+                row_hex += hex(val)[2:].upper()
+            f.write(row_hex + "\n")
 
 
 def generate_maze(rows, cols):
@@ -62,4 +87,5 @@ def generate_maze(rows, cols):
 
 
 if __name__ == "__main__":
-    generate_maze(51, 51)
+    maze = generate_maze(21, 21)
+    gen_output(maze)
