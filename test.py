@@ -4,7 +4,7 @@ import time
 
 
 width = os.get_terminal_size().columns
-maze_width = 20 * 2
+maze_width = 50 * 2
 padding = " " * ((width - maze_width) // 2)
 
 # ANSI escape codes
@@ -62,4 +62,4 @@ def generate_maze(rows, cols):
 
 
 if __name__ == "__main__":
-    generate_maze(21, 21)
+    generate_maze(51, 51)
