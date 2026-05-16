@@ -28,6 +28,7 @@ def rgb_back(r, g, b):
 
 def draw(maze):
     # vv made animation smoother
+    # vv added more if statements for maze solving
     os.system('cls' if os.name == 'nt' else 'clear')
     print("\n")
     for row in maze:
@@ -35,6 +36,10 @@ def draw(maze):
         for col in row:
             if col == 1:
                 line = line + f"{rgb(255, 255, 255)}{WALL}{RESET}"
+            elif col == 2:
+                line = line + f"{RED}{WALL}{RESET}"
+            elif col == 3:
+                line = line + f"{GREEN}{WALL}{RESET}"
             else:
                 line = line + f"{RESET}{PATH}"
         print(padding + line, end="")
@@ -86,6 +91,66 @@ def generate_maze(rows, cols):
     return grid
 
 
+# added maze solver
+def solve_maze(grid, filename="output.txt"):
+    rows = len(grid)
+    cols = len(grid[0])
+    start = (1, 1)
+    end = (rows - 2, cols - 2)
+
+    visited = set()
+    
+    output_moves = []
+        
+    output_dir = {
+        (1, 0): "S",
+        (0, 1): "E",
+        (-1, 0): "N",
+        (0, -1): "W"
+    }
+
+    def search(r, c):
+        if (r, c) == end:
+            grid[r][c] = 3
+            draw(grid)
+            return 1
+
+        if (r, c) in visited or grid[r][c] == 1:
+            return 0
+
+        visited.add((r, c))
+
+        grid[r][c] = 2
+        draw(grid)
+        time.sleep(0.001)
+
+        dirs = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+        for dr, dc in dirs:
+            nr = r + dr
+            nc = c + dc
+            if 0 <=nr < rows and 0 <= nc < cols:
+                if search(nr, nc):
+                    grid[r][c] = 3
+                    output_moves.append(output_dir[(dr, dc)])
+                    return 1
+
+        grid[r][c] = 0
+        draw(grid)
+        time.sleep(0.1)
+        return 0
+
+    found = search(start[0], start[1])
+
+    if found:
+        draw(grid)
+        
+        output_moves.reverse()
+        
+        with open(filename, "a") as f:
+            f.write("".join(output_moves) + "\n")
+
+
 if __name__ == "__main__":
     maze = generate_maze(21, 21)
     gen_output(maze)
+    solve_maze(maze)
