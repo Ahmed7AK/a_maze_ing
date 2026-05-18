@@ -4,7 +4,7 @@ import time
 
 
 width = os.get_terminal_size().columns
-maze_width = 50 * 2
+maze_width = 40 * 2
 padding = " " * ((width - maze_width) // 2)
 
 # ANSI escape codes
@@ -29,6 +29,7 @@ def rgb_back(r, g, b):
 def draw(maze):
     # vv made animation smoother
     # vv added more if statements for maze solving
+    # vv added another if statement for the player
     os.system('cls' if os.name == 'nt' else 'clear')
     print("\n")
     for row in maze:
@@ -40,6 +41,8 @@ def draw(maze):
                 line = line + f"{RED}{WALL}{RESET}"
             elif col == 3:
                 line = line + f"{GREEN}{WALL}{RESET}"
+            elif col == 4:
+                line = line + f"{BLUE}{WALL}{RESET}"
             else:
                 line = line + f"{RESET}{PATH}"
         print(padding + line, end="")
@@ -77,7 +80,7 @@ def generate_maze(rows, cols):
     def carve(r, c):
         grid[r][c] = False
         draw(grid)
-        time.sleep(0.1)
+        #time.sleep(0.1)
         dirs = [(0, 2), (0, -2), (2, 0), (-2, 0)]
         random.shuffle(dirs)
         for dr, dc in dirs:
@@ -122,7 +125,7 @@ def solve_maze(grid, filename="output.txt"):
 
         grid[r][c] = 2
         draw(grid)
-        time.sleep(0.001)
+        #time.sleep(0.1)
 
         dirs = [(0, 1), (1, 0), (0, -1), (-1, 0)]
         for dr, dc in dirs:
@@ -136,7 +139,7 @@ def solve_maze(grid, filename="output.txt"):
 
         grid[r][c] = 0
         draw(grid)
-        time.sleep(0.1)
+        #time.sleep(0.1)
         return 0
 
     found = search(start[0], start[1])
@@ -149,8 +152,56 @@ def solve_maze(grid, filename="output.txt"):
         with open(filename, "a") as f:
             f.write("".join(output_moves) + "\n")
 
+# key presses thru microsoft visual c runtime (just for my laptop)
+def get_key():
+    import msvcrt
+    ch = msvcrt.getch()
+    return ch.decode('utf-8', errors='ignore').lower()
+
+# interactive maze
+def play_maze(grid):
+    rows = len(grid)
+    cols = len(grid[0])
+    pr = 1
+    pc = 1
+    endr = rows - 2
+    endc = cols - 2
+    
+    while True:
+        old_val = grid[pr][pc]
+        grid[pr][pc] = 4
+        draw(grid)
+        if (pr, pc) == (endr, endc):
+            break
+        grid[pr][pc] = old_val
+        key = get_key()
+        if key == 'q':
+            break
+        dr = 0
+        dc = 0
+        if key == 'w':
+            dr = -1
+        elif key == 's':
+            dr = 1
+        elif key == 'a':
+            dc = -1
+        elif key == 'd':
+            dc = 1
+        else: continue
+        nr = pr + dr
+        nc = pc + dc
+        if (0 <= nr < rows and 0 <= nc < cols):
+            if grid[nr][nc] != 1:
+                pr, pc = nr, nc
 
 if __name__ == "__main__":
-    maze = generate_maze(21, 21)
+    maze = generate_maze(41, 41)
     gen_output(maze)
-    solve_maze(maze)
+    while True:
+        choice = input("maze generated! 1 to play game, 2 to solve maze")
+        if choice == "1":
+            play_maze(maze)
+        elif choice == "2":
+            solve_maze(maze)
+        else:
+            break
