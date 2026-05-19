@@ -20,50 +20,53 @@ class MazeGenerator:
         self._rng = random.Random(self._seed)
 
     def create_maze(self) -> list[list[Cell]]:
-        for y in range(self._height + 2):
+        for y in range(self._height * 2 + 1):
             row = []
-            for x in range(self._width + 2):
+            for x in range(self._width * 2 + 1):
                 wall = Cell(True)
                 if x == 0 or y == 0:
                     wall.protect = True
                     row.append(wall)
-                elif x == self._width + 1 or y == self._height + 1:
+                elif x == self._width * 2 or y == self._height * 2:
                     wall.protect = True
                     row.append(wall)
                 else:
                     row.append(wall)
             self.maze.append(row)
+        self.maze[self._entry[1] + 1][self._entry[0] + 1].entry = True
+        self.maze[self._exit[1] + 1][self._exit[1] + 1].exit = True
         return self.maze
 
     def forty_two_pattern(self) -> None:
-        if self._width < 8 or self._height < 6:
+        if self._width < 13 or self._height < 11:
             print("Maze is too small to acomodate 42 pattern")
             return
-        center_x = int(self._width / 2) + 1
-        center_y = int(self._height / 2) + 1
 
-        self.maze[center_y - 2][center_x - 3].protect = True
-        self.maze[center_y - 2][center_x + 1].protect = True
-        self.maze[center_y - 2][center_x + 2].protect = True
-        self.maze[center_y - 2][center_x + 3].protect = True
+        rows = len(self.maze)
+        cols = len(self.maze[0])
+        mid_r = rows // 2
+        mid_c = cols // 2
 
-        self.maze[center_y - 1][center_x - 3].protect = True
-        self.maze[center_y - 1][center_x + 3].protect = True
+        self.maze[mid_r][mid_c - 2].protect = True
+        self.maze[mid_r + 2][mid_c - 2].protect = True
+        self.maze[mid_r + 4][mid_c - 2].protect = True
+        self.maze[mid_r][mid_c - 4].protect = True
+        self.maze[mid_r][mid_c - 6].protect = True
+        self.maze[mid_r - 2][mid_c - 6].protect = True
+        self.maze[mid_r - 4][mid_c - 6].protect = True
 
-        self.maze[center_y][center_x - 3].protect = True
-        self.maze[center_y][center_x - 2].protect = True
-        self.maze[center_y][center_x - 1].protect = True
-        self.maze[center_y][center_x + 1].protect = True
-        self.maze[center_y][center_x + 2].protect = True
-        self.maze[center_y][center_x + 3].protect = True
+        self.maze[mid_r][mid_c + 2].protect = True
+        self.maze[mid_r + 2][mid_c + 2].protect = True
+        self.maze[mid_r + 4][mid_c + 2].protect = True
+        self.maze[mid_r + 4][mid_c + 4].protect = True
+        self.maze[mid_r + 4][mid_c + 6].protect = True
+        self.maze[mid_r][mid_c + 4].protect = True
+        self.maze[mid_r][mid_c + 6].protect = True
+        self.maze[mid_r - 2][mid_c + 6].protect = True
+        self.maze[mid_r - 4][mid_c + 6].protect = True
+        self.maze[mid_r - 4][mid_c + 4].protect = True
+        self.maze[mid_r - 4][mid_c + 2].protect = True
 
-        self.maze[center_y + 1][center_x - 1].protect = True
-        self.maze[center_y + 1][center_x + 1].protect = True
-
-        self.maze[center_y + 2][center_x - 1].protect = True
-        self.maze[center_y + 2][center_x + 1].protect = True
-        self.maze[center_y + 2][center_x + 2].protect = True
-        self.maze[center_y + 2][center_x + 3].protect = True
 
     def generate_maze(self) -> None:
         self.forty_two_pattern()
@@ -73,8 +76,8 @@ class MazeGenerator:
             self._rng.shuffle(dirs)
             for dr, dc in dirs:
                 nr, nc = r + dr, c + dc
-                if 0 <= nr < self._height + 1 and \
-                   0 <= nc < self._width + 1 and \
+                if 0 <= nr < self._height * 2 + 1 and \
+                   0 <= nc < self._width * 2 + 1 and \
                    self.maze[nr][nc].wall and \
                    not self.maze[nr][nc].protect:
                     self.maze[r + dr//2][c + dc//2].wall = False
@@ -83,19 +86,28 @@ class MazeGenerator:
 
 
 if __name__ == "__main__":
-    config = {'WIDTH': 21, 'HEIGHT': 21, 'ENTRY': (0, 0), 'EXIT': (19, 14), 'OUTPUT_FILE': 'maze.txt', 'PERFECT': True, 'SEED': ''}
+    RED = "\033[31m"
+    GREEN = "\033[32m"
+    YELLOW = "\033[33m"
+    BLUE = "\033[34m"
+    BOLD = "\033[1m"
+    RESET = "\033[0m"
+    WALL = "\u2588\u2588"
+    PATH = "  "
+
+    config = {'WIDTH': 13, 'HEIGHT': 11, 'ENTRY': (0, 0), 'EXIT': (19, 14), 'OUTPUT_FILE': 'maze.txt', 'PERFECT': True, 'SEED': ''}
     mg = MazeGenerator(config)
     maze = mg.create_maze()
 
     mg.generate_maze()
     for row in mg.maze:
         for col in row:
-            if (col, row) == config["ENTRY"] or (col, row) == config["EXIT"]:
-                print("\033[31m\u2588\u2588\033[0m")
+            if col.entry or col.exit:
+                print(f"{RED}{WALL}{RESET}", end="")
             elif col.wall and col.protect:
-                print("\033[34m\u2588\u2588\033[0m", end="")
+                print(f"{BLUE}{WALL}{RESET}", end="")
             elif col.wall:
-                print("\u2588\u2588", end="")
+                print(f"{WALL}", end="")
             else:
                 print("  ", end="")
         print()
